@@ -21,6 +21,7 @@ import org.apache.poi.xssf.usermodel.XSSFWorkbook;
 public class ExcelTransformer {
     // 定数の定義
     private static final String SAMPLE_DATA_PATH = "サンプルデータ.xlsx";
+    private static final String TEMPLATE_FILE_PATH = "テンプレート.xlsx";
     private static final String TEMP_FILE_PATH = "temp.xlsx";
     private static final String TEMPLATE_SHEET_NAME = "template";
 
@@ -39,40 +40,6 @@ public class ExcelTransformer {
         Files.delete(tempPath);
     }
 
-    /**
-     * 出力シートにデータを埋め込むメソッド
-     *
-     * @param dataMap
-     * @param templateSheet
-     * @param outputSheet
-     */
-    private static void fillOutputSheet(Map<PickingInfoKey, Map<DeliveryField, Map<String, Integer>>> dataMap,
-                                        Sheet templateSheet, Sheet outputSheet) {
-
-        int outputRowNum = 1;
-        for (Map.Entry<PickingInfoKey, Map<DeliveryField, Map<String, Integer>>> entry : dataMap.entrySet()) {
-            PickingInfoKey info = entry.getKey();
-            Map<DeliveryField, Map<String, Integer>> perItemMap = entry.getValue();
-
-            Collection<Map<String, Integer>> collection = perItemMap.values();
-            Map<String, Integer> firstMap = collection.iterator().next();
-            List<String> storeCdList = new ArrayList<>(firstMap.keySet());
-
-            // 初回のループのみヘッダー項目を設定(テンプレート1行目から)、それ以外はスキップ(テンプレート3行目からß)
-            int startRow = outputRowNum == 1 ? 1 : 3;
-            // 行のループ
-            for (int j = startRow; j <= templateSheet.getLastRowNum(); j++) {
-                Row templateRow = templateSheet.getRow(j);
-                Row newRow = outputSheet.createRow(outputRowNum++);
-
-                // 対象行、列のループ
-                for (int k = 1; k < templateRow.getLastCellNum(); k++) {
-                    setCellContentAndStyle(newRow, k, info, storeCdList, perItemMap, templateRow);
-                    outputSheet.setColumnWidth(k, templateSheet.getColumnWidth(k));
-                }
-            }
-        }
-    }
 
     /**
      * セルに値とスタイルを設定します
@@ -212,13 +179,26 @@ public class ExcelTransformer {
         }
     }
 
+    /**
+     * テンプレートをコピーし、一時ファイルを作成する
+     *
+     * @return
+     * @throws Exception
+     */
     private static Path copyTemplateToTempFile() throws Exception {
         Path tempPath = Paths.get(ExcelTransformer.TEMP_FILE_PATH);
-        // ファイルをコピー（既に存在する場合は上書き）
-        Files.copy(Paths.get(SAMPLE_DATA_PATH), tempPath, StandardCopyOption.REPLACE_EXISTING);
+        // テンプレートファイルをコピー（既に存在する場合は上書き）
+        Files.copy(Paths.get(TEMPLATE_FILE_PATH), tempPath, StandardCopyOption.REPLACE_EXISTING);
         return tempPath;
     }
 
+    /**
+     * データを新しいExcelファイルに埋め込む
+     *
+     * @param dataMap
+     * @param tempPath
+     * @throws Exception
+     */
     private static void embedDataToNewExcelFile(Map<PickingInfoKey, Map<DeliveryField, Map<String, Integer>>> dataMap, Path tempPath) throws Exception {
         try (Workbook workbook = new XSSFWorkbook(tempPath.toFile())) {
             Sheet templateSheet = workbook.getSheet(TEMPLATE_SHEET_NAME);
@@ -231,6 +211,41 @@ public class ExcelTransformer {
             DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyyMMddHHmmss");
             String formattedTime = time.format(formatter);
             saveWorkbookToFile(workbook, formattedTime + "_ピッキングシート_サンプル.xlsx");
+        }
+    }
+
+    /**
+     * 出力シートにデータを埋め込むメソッド
+     *
+     * @param dataMap
+     * @param templateSheet
+     * @param outputSheet
+     */
+    private static void fillOutputSheet(Map<PickingInfoKey, Map<DeliveryField, Map<String, Integer>>> dataMap,
+                                        Sheet templateSheet, Sheet outputSheet) {
+
+        int outputRowNum = 1;
+        for (Map.Entry<PickingInfoKey, Map<DeliveryField, Map<String, Integer>>> entry : dataMap.entrySet()) {
+            PickingInfoKey info = entry.getKey();
+            Map<DeliveryField, Map<String, Integer>> perItemMap = entry.getValue();
+
+            Collection<Map<String, Integer>> collection = perItemMap.values();
+            Map<String, Integer> firstMap = collection.iterator().next();
+            List<String> storeCdList = new ArrayList<>(firstMap.keySet());
+
+            // 初回のループのみヘッダー項目を設定(テンプレート1行目から)、それ以外はスキップ(テンプレート3行目から)
+            int startRow = outputRowNum == 1 ? 1 : 3;
+            // 行のループ
+            for (int j = startRow; j <= templateSheet.getLastRowNum(); j++) {
+                Row templateRow = templateSheet.getRow(j);
+                Row newRow = outputSheet.createRow(outputRowNum++);
+
+                // 対象行、列のループ
+                for (int k = 1; k < templateRow.getLastCellNum(); k++) {
+                    setCellContentAndStyle(newRow, k, info, storeCdList, perItemMap, templateRow);
+                    outputSheet.setColumnWidth(k, templateSheet.getColumnWidth(k));
+                }
+            }
         }
     }
 
@@ -281,18 +296,12 @@ public class ExcelTransformer {
                     pickingInfo.getJgbCode(),
                     pickingInfo.getSupplier());
 
-            dataMap.putIfAbsent(infoKey, new LinkedHashMap<>());
+            Map<DeliveryField, Map<String, Integer>> itemMap = dataMap.computeIfAbsent(infoKey, k -> new LinkedHashMap<>());
 
-            Map<DeliveryField, Map<String, Integer>> itemMap = dataMap.get(infoKey);
-            itemMap.putIfAbsent(DeliveryField.店舗在庫, new LinkedHashMap<>());
-            itemMap.putIfAbsent(DeliveryField.店舗積送, new LinkedHashMap<>());
-            itemMap.putIfAbsent(DeliveryField.配分数, new LinkedHashMap<>());
-            itemMap.putIfAbsent(DeliveryField.基準在庫, new LinkedHashMap<>());
-
-            itemMap.get(DeliveryField.店舗在庫).put(pickingInfo.getStoreCd(), pickingInfo.getStoreStock());
-            itemMap.get(DeliveryField.店舗積送).put(pickingInfo.getStoreCd(), pickingInfo.getStockInTransit());
-            itemMap.get(DeliveryField.配分数).put(pickingInfo.getStoreCd(), pickingInfo.getQty());
-            itemMap.get(DeliveryField.基準在庫).put(pickingInfo.getStoreCd(), pickingInfo.getSafetyStock());
+            itemMap.computeIfAbsent(DeliveryField.店舗在庫, k -> new LinkedHashMap<>()).put(pickingInfo.getStoreCd(), pickingInfo.getStoreStock());
+            itemMap.computeIfAbsent(DeliveryField.店舗積送, k -> new LinkedHashMap<>()).put(pickingInfo.getStoreCd(), pickingInfo.getStockInTransit());
+            itemMap.computeIfAbsent(DeliveryField.配分数, k -> new LinkedHashMap<>()).put(pickingInfo.getStoreCd(), pickingInfo.getQty());
+            itemMap.computeIfAbsent(DeliveryField.基準在庫, k -> new LinkedHashMap<>()).put(pickingInfo.getStoreCd(), pickingInfo.getSafetyStock());
         }
 
         return dataMap;
