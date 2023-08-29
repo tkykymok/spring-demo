@@ -5,6 +5,7 @@ import java.io.FileOutputStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.nio.file.StandardCopyOption;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
@@ -33,15 +34,10 @@ public class ExcelTransformer {
 
         System.out.println(dataMap);
 
+        // 一時ファイルのパス
         Path tempPath = Paths.get("temp.xlsx");
-
-        // temp.xlsx が存在するか確認
-        if (Files.exists(tempPath)) {
-            // 存在する場合、ファイルを削除
-            Files.delete(tempPath);
-        }
-        // ファイルをコピー
-        Files.copy(Paths.get("サンプル.xlsx"), tempPath);
+        // ファイルをコピー（既に存在する場合は上書き）
+        Files.copy(Paths.get("サンプル.xlsx"), tempPath, StandardCopyOption.REPLACE_EXISTING);
 
         // テンプレートシートを取得
         File file = new File("temp.xlsx");
@@ -125,6 +121,7 @@ public class ExcelTransformer {
 
     /**
      * 値を持つセルにデータを埋め込むメソッド
+     *
      * @param newRow
      * @param colIndex
      * @param dataList
