@@ -12,11 +12,9 @@ import java.util.Collection;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.function.Function;
 
-import org.apache.poi.ss.usermodel.Cell;
-import org.apache.poi.ss.usermodel.Row;
-import org.apache.poi.ss.usermodel.Sheet;
-import org.apache.poi.ss.usermodel.Workbook;
+import org.apache.poi.ss.usermodel.*;
 import org.apache.poi.xssf.usermodel.XSSFWorkbook;
 
 public class ExcelTransformer {
@@ -106,14 +104,13 @@ public class ExcelTransformer {
                     } else {
                         switch (fieldName) {
                             case 店舗:
-                                fillCellsWithStoreCodes(newRow, k, storeCdList, templateCell);
+                                fillCells(newRow, k, storeCdList, templateCell, storeCd -> storeCd);
                                 break;
                             case 店舗在庫:
                             case 店舗積送:
                             case 配分数:
                             case 基準在庫:
-                                fillCellsWithValues(newRow, k, storeCdList, perItemMap.get(fieldName),
-                                        templateCell);
+                                fillCells(newRow, k, storeCdList, templateCell, storeCd -> perItemMap.get(fieldName).get(storeCd));
                                 break;
                             default:
                                 break;
@@ -127,42 +124,39 @@ public class ExcelTransformer {
     }
 
     /**
-     * 「店舗」のセルに店舗コードを埋め込むメソッド
-     *
-     * @param newRow
-     * @param colIndex
-     * @param storeCdList
-     * @param templateCell
-     */
-    private static void fillCellsWithStoreCodes(Row newRow, int colIndex, List<String> storeCdList,
-                                                Cell templateCell) {
-        int count = 1;
-        for (String storeCd : storeCdList) {
-            Cell newCell = newRow.createCell(colIndex + count);
-            // セルのスタイルと値を設定
-            newCell.setCellStyle(templateCell.getCellStyle());
-            newCell.setCellValue(storeCd);
-            count++;
-        }
-    }
-
-    /**
      * 値を持つセルにデータを埋め込むメソッド
-     *
      * @param newRow
      * @param colIndex
-     * @param storeCdList
-     * @param valueMap
+     * @param dataList
      * @param templateCell
+     * @param valueProvider
+     * @param <T>
      */
-    private static void fillCellsWithValues(Row newRow, int colIndex, List<String> storeCdList,
-                                            Map<String, Integer> valueMap, Cell templateCell) {
+    private static <T> void fillCells(Row newRow, int colIndex, List<T> dataList, Cell templateCell,
+                                      Function<T, Object> valueProvider) {
+        // カスタムのスタイルを作成
+        CellStyle rightBorderStyle = newRow.getSheet().getWorkbook().createCellStyle();
+        rightBorderStyle.setBorderRight(BorderStyle.MEDIUM); // 右太枠線を追加
+
         int count = 1;
-        for (String storeCd : storeCdList) {
+        for (T data : dataList) {
             Cell newCell = newRow.createCell(colIndex + count);
             // セルのスタイルと値を設定
-            newCell.setCellStyle(templateCell.getCellStyle());
-            newCell.setCellValue(valueMap.get(storeCd));
+            CellStyle currentStyle = copyCellStyle(newRow.getSheet().getWorkbook(), templateCell.getCellStyle());
+            newCell.setCellStyle(currentStyle);
+            Object value = valueProvider.apply(data);
+            if (value instanceof String) {
+                newCell.setCellValue((String) value);
+            } else if (value instanceof Integer) {
+                newCell.setCellValue((Integer) value);
+            }
+
+            // 最後のセルだけ右太枠線のスタイルを適用
+            if (count == dataList.size()) {
+                CellStyle combinedStyle = copyCellStyle(newRow.getSheet().getWorkbook(), currentStyle);
+                combinedStyle.setBorderRight(rightBorderStyle.getBorderRight());
+                newCell.setCellStyle(combinedStyle);
+            }
             count++;
         }
     }
@@ -201,16 +195,21 @@ public class ExcelTransformer {
      *
      * @param workbook
      * @param fileName
-     * @return fileName
      * @throws Exception
      */
-    private static String saveWorkbookToFile(Workbook workbook, String fileName) throws Exception {
+    private static void saveWorkbookToFile(Workbook workbook, String fileName) throws Exception {
         try (FileOutputStream outputStream = new FileOutputStream(fileName)) {
             removeSheet(workbook, "template");
             workbook.write(outputStream);
         }
         workbook.close();
-        return fileName;
+    }
+
+    // 既存のCellStyleをコピーするヘルパーメソッド
+    public static CellStyle copyCellStyle(Workbook workbook, CellStyle oldStyle) {
+        CellStyle newStyle = workbook.createCellStyle();
+        newStyle.cloneStyleFrom(oldStyle);
+        return newStyle;
     }
 
     /**
