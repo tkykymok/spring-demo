@@ -62,20 +62,20 @@ public class ExcelTransformer {
         saveWorkbookToFile(workbook, formattedTime + "_ピッキングシート_サンプル.xlsx");
 
         // 一時的に作成したファイルを削除
-        Files.delete(Paths.get("temp.xlsx"));
+        Files.delete(tempPath);
     }
 
     /**
-     *  出力シートにデータを埋め込むメソッド
+     * 出力シートにデータを埋め込むメソッド
+     *
      * @param dataMap
      * @param templateSheet
      * @param outputSheet
      */
     private static void fillOutputSheet(Map<PickingInfoKey, Map<DeliveryField, Map<String, Integer>>> dataMap,
-            Sheet templateSheet, Sheet outputSheet) {
+                                        Sheet templateSheet, Sheet outputSheet) {
 
         int outputRowNum = 1;
-
         for (Map.Entry<PickingInfoKey, Map<DeliveryField, Map<String, Integer>>> entry : dataMap.entrySet()) {
             // キーを取得
             PickingInfoKey info = entry.getKey();
@@ -86,7 +86,8 @@ public class ExcelTransformer {
             Map<String, Integer> firstMap = collection.iterator().next();
             List<String> storeCdList = new ArrayList<>(firstMap.keySet());
 
-            for (int j = 1; j <= templateSheet.getLastRowNum(); j++) {
+            // 初回ループ時はヘッダー部分を設定、それ以外はヘッダー部分の設定をスキップ
+            for (int j = outputRowNum == 1 ? 1 : 3; j <= templateSheet.getLastRowNum(); j++) {
                 Row templateRow = templateSheet.getRow(j);
                 Row newRow = outputSheet.createRow(outputRowNum++);
 
@@ -127,13 +128,14 @@ public class ExcelTransformer {
 
     /**
      * 「店舗」のセルに店舗コードを埋め込むメソッド
+     *
      * @param newRow
      * @param colIndex
      * @param storeCdList
      * @param templateCell
      */
     private static void fillCellsWithStoreCodes(Row newRow, int colIndex, List<String> storeCdList,
-            Cell templateCell) {
+                                                Cell templateCell) {
         int count = 1;
         for (String storeCd : storeCdList) {
             Cell newCell = newRow.createCell(colIndex + count);
@@ -146,6 +148,7 @@ public class ExcelTransformer {
 
     /**
      * 値を持つセルにデータを埋め込むメソッド
+     *
      * @param newRow
      * @param colIndex
      * @param storeCdList
@@ -153,7 +156,7 @@ public class ExcelTransformer {
      * @param templateCell
      */
     private static void fillCellsWithValues(Row newRow, int colIndex, List<String> storeCdList,
-            Map<String, Integer> valueMap, Cell templateCell) {
+                                            Map<String, Integer> valueMap, Cell templateCell) {
         int count = 1;
         for (String storeCd : storeCdList) {
             Cell newCell = newRow.createCell(colIndex + count);
@@ -166,6 +169,7 @@ public class ExcelTransformer {
 
     /**
      * 新しいシートを作成する
+     *
      * @param workbook
      * @param sheetName
      * @return
@@ -180,6 +184,7 @@ public class ExcelTransformer {
 
     /**
      * 指定のシートを削除する
+     *
      * @param workbook
      * @param sheetName
      * @return
@@ -193,6 +198,7 @@ public class ExcelTransformer {
 
     /**
      * ワークブックをファイルに保存するメソッド
+     *
      * @param workbook
      * @param fileName
      * @return fileName
@@ -209,6 +215,7 @@ public class ExcelTransformer {
 
     /**
      * シートからPickingInfoのリストを抽出するメソッド
+     *
      * @param sheet
      * @return
      */
@@ -238,6 +245,7 @@ public class ExcelTransformer {
     /**
      * PickingInfoのリストを変換してデータマップを作成するメソッド
      * Map<PickingInfoKey, Map<項目名, Map<店舗コード, V>>>
+     *
      * @param pickingInfoList
      * @return
      */
