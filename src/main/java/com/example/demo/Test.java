@@ -21,6 +21,7 @@ public class Test {
 
         // Data structure to hold the data from Sheet1
         Map<String, Map<String, Map<String, Integer>>> dataMap = new LinkedHashMap<>();
+        // {123456={店舗在庫={3001=1, 3002=2, 3003=3, 3004=4, 3005=5}, 店舗積送={3001=0, 3002=0, 3003=0, 3004=0, 3005=0}, 配分数={3001=0, 3002=0, 3003=0, 3004=0, 3005=0}, 基準在庫={3001=5, 3002=5, 3003=5, 3004=5, 3005=5}},
 
         for (int i = 1; i <= sheet1.getLastRowNum(); i++) {
             Row row = sheet1.getRow(i);
