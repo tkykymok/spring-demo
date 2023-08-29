@@ -28,7 +28,7 @@ public class ExcelTransformer {
 
         // シートからPickingInfoのリストを抽出
         List<PickingInfo> pickingInfoList = extractDataFromSheet(sourceSheet);
-        // PickingInfoのリストを変換してデータマップを作成　
+        // PickingInfoのリストを変換してデータマップを作成
         Map<PickingInfoKey, Map<DeliveryField, Map<String, Integer>>> dataMap = transformData(pickingInfoList);
 
         System.out.println(dataMap);
