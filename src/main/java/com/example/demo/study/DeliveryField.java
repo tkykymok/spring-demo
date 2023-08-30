@@ -1,4 +1,4 @@
-package com.example.demo;
+package com.example.demo.study;
 
 public enum DeliveryField {
     店舗("店舗"),
