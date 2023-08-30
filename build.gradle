@@ -8,7 +8,7 @@ group = 'com.example'
 version = '0.0.1-SNAPSHOT'
 
 java {
-	sourceCompatibility = 'VERSION_11'
+	sourceCompatibility = '11'
 }
 
 configurations {
@@ -28,9 +28,11 @@ dependencies {
 	annotationProcessor 'org.projectlombok:lombok'
 	testImplementation 'org.springframework.boot:spring-boot-starter-test'
 	
-	// Add dependencies for Apache POI
-	implementation 'org.apache.poi:poi:4.1.2'
-	implementation 'org.apache.poi:poi-ooxml:4.1.2'
+	// https://mvnrepository.com/artifact/org.apache.poi/poi	
+	implementation 'org.apache.poi:poi:5.2.3'
+	// https://mvnrepository.com/artifact/org.apache.poi/poi-ooxml
+	implementation 'org.apache.poi:poi-ooxml:5.2.3'
+
 	
 }
 
