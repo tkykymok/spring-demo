@@ -1,17 +1,19 @@
 package com.example.demo.mapper;
 
+import com.example.demo.config.ModelMapperConfig;
+import org.modelmapper.ModelMapper;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Component;
+
 import java.util.List;
 import java.util.stream.Collectors;
 
-import org.modelmapper.ModelMapper;
 
+@Component
 public abstract  class BaseMapper {
-    
-    protected ModelMapper modelMapper;
 
-    public BaseMapper() {
-        this.modelMapper = new ModelMapper();
-    }
+    @Autowired
+    protected ModelMapper modelMapper;
 
     protected <S, D> D map(S source, Class<D> destinationClass) {
         return modelMapper.map(source, destinationClass);

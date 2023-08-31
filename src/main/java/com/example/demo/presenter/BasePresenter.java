@@ -1,12 +1,11 @@
 package com.example.demo.presenter;
 
-import java.util.Collections;
-import java.util.List;
-
+import com.example.demo.dto.response.ApiResponse;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 
-import com.example.demo.dto.response.ApiResponse;
+import java.util.Collections;
+import java.util.List;
 
 public abstract class BasePresenter {
 

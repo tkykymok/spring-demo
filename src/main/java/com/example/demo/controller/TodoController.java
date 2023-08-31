@@ -1,12 +1,10 @@
 package com.example.demo.controller;
 
+import com.example.demo.dto.request.todo.AddTodoReq;
 import com.example.demo.dto.response.todo.GetTodosWithRelatedRes;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 import com.example.demo.domain.usecase.todo.ITodoUseCase;
 import com.example.demo.dto.response.todo.GetAllTodosRes;
@@ -41,6 +39,13 @@ public class TodoController {
     public ResponseEntity<?> getTodosWithRelated(@PathVariable Long userId) throws IOException {
         GetTodosWithRelatedRes response = todoUseCase.fetchTodosWithRelated(userId);
         return todoPresenter.getTodosWithRelatedResponse(response);
+    }
+
+    @PostMapping("/addTodo")
+    public ResponseEntity<?> addTodo(@RequestBody AddTodoReq request) {
+        request.setUserId(1L);
+        todoUseCase.createTodo(request);
+        return todoPresenter.getSuccessResponse("登録が完了しました");
     }
 
 }
