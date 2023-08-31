@@ -15,7 +15,7 @@ public class GetTodosWithRelatedRes {
     @NoArgsConstructor
     public static class TodoWithRelated {
         private Long todoId;
-        private String todoTask;
+        private String todoTitle;
         private Long userId;
         private String userName;
         private Long cityId;
