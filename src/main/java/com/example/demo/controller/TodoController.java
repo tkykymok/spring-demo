@@ -2,6 +2,7 @@ package com.example.demo.controller;
 
 import com.example.demo.dto.request.todo.AddTodoReq;
 import com.example.demo.dto.response.todo.GetTodosWithRelatedRes;
+import com.example.demo.util.MessageHelper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -16,6 +17,9 @@ import java.io.IOException;
 @RestController
 @RequestMapping("/todo")
 public class TodoController {
+
+    @Autowired
+    MessageHelper messageHelper;
 
     @Autowired
     private ITodoUseCase todoUseCase;
@@ -45,7 +49,7 @@ public class TodoController {
     public ResponseEntity<?> addTodo(@RequestBody AddTodoReq request) {
         request.setUserId(1L);
         todoUseCase.createTodo(request);
-        return todoPresenter.getSuccessResponse("登録が完了しました");
+        return todoPresenter.getSuccessResponse(messageHelper.getMessage("completed", "登録"));
     }
 
 }
