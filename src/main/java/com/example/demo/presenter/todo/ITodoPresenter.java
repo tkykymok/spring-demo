@@ -1,5 +1,6 @@
 package com.example.demo.presenter.todo;
 
+import com.example.demo.dto.response.todo.GetTodosWithRelatedRes;
 import org.springframework.http.ResponseEntity;
 
 import com.example.demo.dto.response.ApiResponse;
@@ -10,5 +11,7 @@ public interface ITodoPresenter {
     ResponseEntity<ApiResponse<GetTodoRes>> getTodoResponse(GetTodoRes response);
     
     ResponseEntity<ApiResponse<GetAllTodosRes>> getAllTodoResponse(GetAllTodosRes response);
+
+    ResponseEntity<ApiResponse<GetTodosWithRelatedRes>> getTodosWithRelatedResponse(GetTodosWithRelatedRes response);
 }
 

@@ -4,14 +4,16 @@ import java.util.List;
 
 import lombok.AllArgsConstructor;
 import lombok.Data;
+import lombok.NoArgsConstructor;
 
 @Data
 @AllArgsConstructor
-public class GetExtraTodosRes {
-    private List<ExtraTodoRes>  todos; 
+public class GetTodosWithRelatedRes {
+    private List<TodoWithRelated>  todos;
 
     @Data
-    public class ExtraTodoRes {
+    @NoArgsConstructor
+    public static class TodoWithRelated {
         private Long todoId;
         private String todoTask;
         private Long userId;

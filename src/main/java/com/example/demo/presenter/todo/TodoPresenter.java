@@ -1,5 +1,6 @@
 package com.example.demo.presenter.todo;
 
+import com.example.demo.dto.response.todo.GetTodosWithRelatedRes;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 
@@ -18,6 +19,11 @@ public class TodoPresenter extends BasePresenter implements ITodoPresenter {
 
     @Override
     public ResponseEntity<ApiResponse<GetAllTodosRes>> getAllTodoResponse(GetAllTodosRes response) {
+        return createResponse(response);
+    }
+
+    @Override
+    public ResponseEntity<ApiResponse<GetTodosWithRelatedRes>> getTodosWithRelatedResponse(GetTodosWithRelatedRes response) {
         return createResponse(response);
     }
 }

@@ -25,9 +25,9 @@ public class ExtraTodoRepository implements IExtraTodoRepository {
 
     @Override
     public List<ExtraTodo> findTodosWithRelated(Long userId) throws IOException {
-        String sql = sqlLoader.loadSQL("todo/todos-query.sql");
+        String sql = sqlLoader.loadSQL("todo/findTodosWithRelated.sql");
         Query query = entityManager.createNativeQuery(sql, ExtraTodo.class);
-        query.setParameter("todoIdParam", userId);
+        query.setParameter("userIdParam", userId);
         @SuppressWarnings("unchecked")
         List<ExtraTodo> result = query.getResultList();
         return result;

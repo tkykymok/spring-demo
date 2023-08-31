@@ -3,6 +3,7 @@ package com.example.demo.domain.usecase.todo;
 import java.io.IOException;
 import java.util.List;
 
+import com.example.demo.dto.response.todo.GetTodosWithRelatedRes;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -11,8 +12,6 @@ import com.example.demo.domain.entity.extra.ExtraTodo;
 import com.example.demo.domain.repository.todo.IExtraTodoRepository;
 import com.example.demo.domain.repository.todo.ITodoRepository;
 import com.example.demo.dto.response.todo.GetAllTodosRes;
-import com.example.demo.dto.response.todo.GetExtraTodosRes;
-import com.example.demo.dto.response.todo.GetExtraTodosRes.ExtraTodoRes;
 import com.example.demo.dto.response.todo.GetTodoRes;
 import com.example.demo.mapper.CustomMapper;
 
@@ -23,7 +22,7 @@ public class TodoUseCase implements ITodoUseCase {
     private ITodoRepository todoRepository;
     @Autowired
     private IExtraTodoRepository extraTodoRepository;
-    
+
     @Autowired
     private CustomMapper mapper;
 
@@ -42,11 +41,11 @@ public class TodoUseCase implements ITodoUseCase {
     }
 
     @Override
-    public GetExtraTodosRes fetchTodoWithRelated(Long userId) throws IOException {
+    public GetTodosWithRelatedRes fetchTodosWithRelated(Long userId) throws IOException {
         List<ExtraTodo> todos = extraTodoRepository.findTodosWithRelated(userId);
 
-        return new GetExtraTodosRes(
-                mapper.fromEntityList(todos, ExtraTodoRes.class));
+        return new GetTodosWithRelatedRes(
+                mapper.fromEntityList(todos, GetTodosWithRelatedRes.TodoWithRelated.class));
     }
 
 }
